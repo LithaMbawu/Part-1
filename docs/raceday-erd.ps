@@ -1,0 +1,52 @@
+%!PS-Adobe-3.0
+%%Title: RaceDay Entity Relationship Diagram
+%%Orientation: Landscape
+%%Pages: 1
+%%BoundingBox: 0 0 792 612
+/box { /h exch def /w exch def /y exch def /x exch def newpath x y moveto w 0 rlineto 0 h rlineto w neg 0 rlineto closepath stroke x 8 add y h 16 sub moveto } def
+/title { /s exch def /y exch def /x exch def /Helvetica-Bold findfont s scalefont setfont x y moveto } def
+/line { newpath moveto lineto stroke } def
+/label { /s exch def /y exch def /x exch def /Helvetica findfont 7 scalefont setfont x y moveto s show } def
+/entity { /rows exch def /h exch def /w exch def /y exch def /x exch def x y w h box /Helvetica-Bold findfont 9 scalefont setfont x 8 add y h 14 sub moveto rows { show 0 -11 rmoveto } forall } def
+/arrow { /y2 exch def /x2 exch def /y1 exch def /x1 exch def newpath x1 y1 moveto x2 y2 lineto stroke newpath x2 y2 moveto x2 5 sub y2 3 add lineto x2 5 sub y2 3 sub lineto closepath fill } def
+/Helvetica findfont 8 scalefont setfont
+72 570 moveto (RaceDay Entity Relationship Diagram) show
+72 558 moveto (PK = primary key   FK = foreign key   UK = unique key   Crow's-foot cardinality is expressed by 1 and 0..*) show
+
+% Users
+40 365 170 150 [ (USERS) (PK UserId INT IDENTITY) (FirstName NVARCHAR(60) NOT NULL) (LastName NVARCHAR(60) NOT NULL) (UK Email NVARCHAR(320)) (PasswordHash NVARCHAR(255)) (Role NVARCHAR(20)) (Phone NVARCHAR(30) NULL) (CreatedAt DATETIME2) ] entity
+% Events
+310 410 190 105 [ (EVENTS) (PK EventId INT IDENTITY) (FK OrganiserId INT) (Name NVARCHAR(120)) (Description NVARCHAR(1000)) (EventDate DATETIME2) (Venue NVARCHAR(200)) (Capacity INT) (Status NVARCHAR(20)) (CreatedAt DATETIME2) ] entity
+% Categories
+590 410 165 105 [ (CATEGORIES) (PK CategoryId INT IDENTITY) (UK Name NVARCHAR(80)) (Description NVARCHAR(500)) ] entity
+% EventCategories
+310 250 190 95 [ (EVENT_CATEGORIES) (PK/FK EventId INT) (PK/FK CategoryId INT) (EntryFee DECIMAL(10,2)) (PK = EventId + CategoryId) ] entity
+% Enrolments
+40 135 220 125 [ (ENROLMENTS) (PK EnrolmentId INT IDENTITY) (FK EventId INT) (FK ParticipantId INT) (FK CategoryId INT) (EnrolledAt DATETIME2) (Status NVARCHAR(20)) (UK BibNumber INT NULL) (UK EventId + ParticipantId) ] entity
+% Results
+590 160 165 95 [ (RESULTS) (PK ResultId INT IDENTITY) (UK/FK EnrolmentId INT) (Position INT NULL) (FinishTimeSeconds INT NULL) (Status NVARCHAR(20)) (RecordedAt DATETIME2) ] entity
+
+% Relationship lines and cardinality labels
+210 450 310 465 arrow
+210 400 40 230 arrow
+405 410 405 345 arrow
+590 460 500 300 arrow
+590 435 500 290 arrow
+260 195 590 205 arrow
+260 225 310 285 arrow
+500 295 590 205 arrow
+755 205 590 205 arrow
+
+10 458 (1) label 272 468 (0..*) label
+216 392 (1) label 42 240 (0..*) label
+397 400 (1) label 397 352 (0..*) label
+578 450 (1) label 505 307 (0..*) label
+578 428 (1) label 505 295 (0..*) label
+270 202 (1) label 545 212 (0..*) label
+270 232 (1) label 294 290 (0..*) label
+505 300 (1) label 545 204 (0..*) label
+738 216 (0..1) label 595 216 (1) label
+
+72 65 moveto (Relationships: Users organises Events; Events and Categories form a many-to-many relationship through EventCategories;) show
+72 53 moveto (Events receive Enrolments; Users make Enrolments; each Enrolment selects an offered EventCategory; an Enrolment produces zero or one Result.) show
+showpage
