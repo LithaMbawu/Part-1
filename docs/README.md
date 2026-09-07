@@ -330,9 +330,10 @@ The Mermaid ERD source is also retained to make future design updates easier whi
 
 Add the actual links before submission:
 
-* CI workflow run screenshot: ![alt text](<IMG_8580 2.HEIC>)
+* CI workflow run screenshot:(ci-workflow-screenshot.png)
 * Professional explanation video: 
-* Live SSMS execution screenshot: ![alt text](IMG_8578.HEIC)
+* Live SSMS execution screenshot: (ssms-execution-screenshot.png)
+
 
 These items cannot be generated honestly from the source files alone. The commit-history requirement also requires at least 20 genuine, meaningful commits; the current repository history must be extended through normal development work rather than artificially duplicated commits.
 
