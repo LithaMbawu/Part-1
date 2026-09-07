@@ -60,6 +60,7 @@ ERD Files
 
 The SQL database script is designed to match the ERD so that the database implementation remains consistent with the planned data model.
 
+
 ⸻
 
 API Endpoint Plan
@@ -116,7 +117,24 @@ SQL File
 
 raceday-schema.sql
 
-The script should be tested on a clean SQL Server instance using SQL Server Management Studio (SSMS) to ensure that it executes successfully without errors.
+### SSMS setup and verification
+
+1. Open `raceday-schema.sql` in SQL Server Management Studio connected to a SQL Server instance where the account can create databases.
+2. Execute the complete script from the beginning. The script creates or reuses the `RaceDay` database, recreates the six tables in dependency order, and inserts the seed data.
+3. Confirm that the Messages window reports successful completion with no errors.
+4. Run the following verification query in the `RaceDay` database:
+
+```sql
+SELECT t.name AS TableName, SUM(p.rows) AS RowCount
+FROM sys.tables AS t
+JOIN sys.partitions AS p ON p.object_id = t.object_id AND p.index_id IN (0, 1)
+GROUP BY t.name
+ORDER BY t.name;
+```
+
+The expected row counts are `Users = 5`, `Events = 3`, `Categories = 4`, `EventCategories = 7`, `Enrolments = 4`, and `Results = 2`. Inspect the Keys and Constraints folders in SSMS to confirm the named primary keys, foreign keys, unique constraints, defaults, and check constraints.
+
+The repository does not claim that an SSMS execution, screenshot, or video exists until that evidence is added below.
 
 ⸻
 
@@ -308,6 +326,16 @@ Keeping the original planning documents in the repository provides evidence that
 
 The Mermaid ERD source is also retained to make future design updates easier while preserving the submitted PNG version.
 
+## Submission evidence
+
+Add the actual links before submission:
+
+* CI workflow run screenshot: `TODO - add screenshot link`
+* Professional explanation video: `TODO - add video link`
+* Live SSMS execution screenshot: `TODO - add screenshot link`
+
+These items cannot be generated honestly from the source files alone. The commit-history requirement also requires at least 20 genuine, meaningful commits; the current repository history must be extended through normal development work rather than artificially duplicated commits.
+
 ⸻
 
 Deviations from the Plan
@@ -319,13 +347,3 @@ The six entities and their relationships represented in the ERD are implemented 
 The API endpoint plan is intended to be followed closely during Part 2. If implementation changes are required, those changes should be documented and explained so that the planning documents remain traceable to the final implementation.
 
 ⸻
-
-Conclusion
-
-Part 1 establishes the technical foundation for the RaceDay system.
-
-The ERD defines the relational data model, the API endpoint plan defines the RESTful API contract, and the SQL script implements the database structure and seed data.
-
-The design decisions documented in this project, including role-based users, password hashing, the Event–Category many-to-many relationship, event-category enrolments, and the one-to-zero-or-one relationship between Enrolments and Results, provide the foundation for the API development in Part 2 and the MVC application in Part 3.
-
-This planning stage forms part of the Programming 2B (PROG6212W) course at Rosebank College and demonstrates the importance of properly designing a software solution before beginning implementation.

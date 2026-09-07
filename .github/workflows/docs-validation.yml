@@ -1,0 +1,53 @@
+name: RaceDay documentation validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate required artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs/README.md
+          test -f docs/api-endpoint-plan.md
+          test -f docs/raceday-erd.mmd
+          test -f docs/raceday-erd-export.html
+          test -f docs/raceday-erd.png
+          test -f docs/raceday-schema.sql
+
+      - name: Validate ERD and SQL coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'USERS' docs/raceday-erd.mmd
+          grep -q 'EVENTS' docs/raceday-erd.mmd
+          grep -q 'CATEGORIES' docs/raceday-erd.mmd
+          grep -q 'EVENT_CATEGORIES' docs/raceday-erd.mmd
+          grep -q 'ENROLMENTS' docs/raceday-erd.mmd
+          grep -q 'RESULTS' docs/raceday-erd.mmd
+          grep -q 'CREATE TABLE dbo.Users' docs/raceday-schema.sql
+          grep -q 'CREATE TABLE dbo.Events' docs/raceday-schema.sql
+          grep -q 'CREATE TABLE dbo.Categories' docs/raceday-schema.sql
+          grep -q 'CREATE TABLE dbo.EventCategories' docs/raceday-schema.sql
+          grep -q 'CREATE TABLE dbo.Enrolments' docs/raceday-schema.sql
+          grep -q 'CREATE TABLE dbo.Results' docs/raceday-schema.sql
+          grep -q 'CreatedAt' docs/raceday-erd-export.html
+          grep -q 'PK_Users' docs/raceday-schema.sql
+          grep -q 'FK_Events_Organiser' docs/raceday-schema.sql
+          grep -q 'FK_Enrolments_Event_Category' docs/raceday-schema.sql
+          grep -q 'FK_Results_Enrolment' docs/raceday-schema.sql
+
+      - name: Validate endpoint plan shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '| HTTP Method | Route | Description | Role Required | Request Body (if any) | Expected Response |' docs/api-endpoint-plan.md
+          test "$(grep -c '^| [A-Z]' docs/api-endpoint-plan.md)" -ge 20
+          grep -q '## Route-specific failure cases' docs/api-endpoint-plan.md

@@ -9,49 +9,49 @@ erDiagram
 
     USERS {
         int UserId PK
-        nvarchar FirstName
-        nvarchar LastName
-        nvarchar Email UK
-        nvarchar PasswordHash
-        nvarchar Role
-        nvarchar Phone
-        datetime2 CreatedAt
+        nvarchar(60) FirstName
+        nvarchar(60) LastName
+        nvarchar(320) Email UK
+        nvarchar(255) PasswordHash
+        nvarchar(20) Role
+        nvarchar(30) Phone NULL
+        datetime2(0) CreatedAt
     }
     EVENTS {
         int EventId PK
         int OrganiserId FK
-        nvarchar Name
-        nvarchar Description
-        datetime2 EventDate
-        nvarchar Venue
+        nvarchar(120) Name
+        nvarchar(1000) Description NULL
+        datetime2(0) EventDate
+        nvarchar(200) Venue
         int Capacity
-        nvarchar Status
-        datetime2 CreatedAt
+        nvarchar(20) Status
+        datetime2(0) CreatedAt
     }
     CATEGORIES {
         int CategoryId PK
-        nvarchar Name UK
-        nvarchar Description
+        nvarchar(80) Name UK
+        nvarchar(500) Description NULL
     }
     EVENT_CATEGORIES {
         int EventId PK, FK
         int CategoryId PK, FK
-        decimal EntryFee
+        decimal(10,2) EntryFee
     }
     ENROLMENTS {
         int EnrolmentId PK
         int EventId FK
         int ParticipantId FK
         int CategoryId FK
-        datetime2 EnrolledAt
-        nvarchar Status
-        int BibNumber UK
+        datetime2(0) EnrolledAt
+        nvarchar(20) Status
+        int BibNumber UK NULL
     }
     RESULTS {
         int ResultId PK
         int EnrolmentId FK, UK
-        int Position
-        int FinishTimeSeconds
-        nvarchar Status
-        datetime2 RecordedAt
+        int Position NULL
+        int FinishTimeSeconds NULL
+        nvarchar(20) Status
+        datetime2(0) RecordedAt
     }
