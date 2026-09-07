@@ -332,7 +332,7 @@ Add the actual links before submission:
 
 * CI workflow run screenshot: 
 * Professional explanation video: `TODO - add video link`
-* Live SSMS execution screenshot: `TODO - add screenshot link`
+* Live SSMS execution screenshot: 
 
 These items cannot be generated honestly from the source files alone. The commit-history requirement also requires at least 20 genuine, meaningful commits; the current repository history must be extended through normal development work rather than artificially duplicated commits.
 
