@@ -330,7 +330,7 @@ The Mermaid ERD source is also retained to make future design updates easier whi
 
 Add the actual links before submission:
 
-* CI workflow run screenshot: `TODO - add screenshot link`
+* CI workflow run screenshot: 
 * Professional explanation video: `TODO - add video link`
 * Live SSMS execution screenshot: `TODO - add screenshot link`
 
