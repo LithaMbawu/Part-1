@@ -331,7 +331,7 @@ The Mermaid ERD source is also retained to make future design updates easier whi
 Add the actual links before submission:
 
 * CI workflow run screenshot:(ci-workflow-screenshot.png)
-* Professional explanation video: 
+* Professional explanation video: https://youtu.be/0OgLvuN1I5w?si=sbY3-EC0dF9XNCP3
 * Live SSMS execution screenshot: (ssms-execution-screenshot.png)
 
 
