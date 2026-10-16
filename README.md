@@ -72,7 +72,7 @@ ORDER BY t.name;
 
 ## Cybersecurity chatbot
 
-The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersecurity awareness. Its reusable core provides keyword-based guidance, follow-up responses, simple sentiment-aware phrasing, randomized tips, and in-session personalization. The GUI has a dark chat layout, cyber-themed ASCII branding, and an optional bundled voice greeting.
+The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersecurity awareness. Its reusable core provides keyword-based guidance, follow-up responses, simple sentiment-aware phrasing, randomized tips, and persistent personalization. The GUI has a dark chat layout, cyber-themed status branding, and an optional bundled voice greeting. The ASCII artwork is included as a project asset, but is not currently rendered in the chat window.
 
 ### Features
 
