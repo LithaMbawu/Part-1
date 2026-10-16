@@ -145,8 +145,8 @@ Exact wording and advice can vary because responses are selected from multiple o
 
 ## Submission and release checklist
 
-- Submit the repository link through ARC: [https://github.com/LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1).
-- Submit the presentation link through ARC or use the YouTube link above.
+- Submit the repository link through ARC: https://github.com/LithaMbawu/Part-1.git
+- Submit the presentation link through ARC or use the YouTube link above: https://youtu.be/BuCVB9RGW9o?si=rI85jgXn26ktKE_s 
 - Attach the available evidence: [CI workflow screenshot](docs/ci-workflow-screenshot.png) and [SSMS execution screenshot](docs/ssms-execution-screenshot.png). Confirm each image clearly shows the relevant successful run before submission.
 - Keep commits descriptive and tied to real project changes; do not manufacture commits to meet a count.
 - The rubric requests at least three tagged releases with version notes. Create those tags/releases in GitHub as actual milestones are completed, with accurate notes describing what each version contains. A tag is not the same as a GitHub release.
