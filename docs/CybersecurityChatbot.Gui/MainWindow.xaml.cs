@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +12,7 @@ public partial class MainWindow : Window
 {
     private readonly ChatbotResponseService _chatbot = new();
     private readonly ChatbotMemory _memory = new();
-    private readonly ObservableCollection<string> _messages = new();
+    private readonly ObservableCollection<ChatMessage> _messages = new();
 
     public MainWindow()
     {
@@ -42,7 +41,12 @@ public partial class MainWindow : Window
 
     private void VoiceToggleButton_Click(object sender, RoutedEventArgs e)
     {
-        VoiceToggleButton.Content = VoiceToggleButton.IsChecked == true ? "🔊 Voice on" : "🔇 Voice off";
+        var greetingEnabled = VoiceToggleButton.IsChecked == true;
+        VoiceToggleButton.Content = greetingEnabled ? "🔊 Greeting on" : "🔇 Greeting off";
+        if (greetingEnabled)
+        {
+            PlayGreeting();
+        }
     }
 
     private void HandleUserInput()
@@ -57,23 +61,20 @@ public partial class MainWindow : Window
         var response = _chatbot.GetResponse(input, _memory);
         AddBotMessage(response);
 
-        if (VoiceToggleButton.IsChecked == true)
-        {
-            PlayGreeting();
-        }
-
         UserInputTextBox.Clear();
         UserInputTextBox.Focus();
     }
 
     private void AddUserMessage(string message)
     {
-        _messages.Add($"You: {message}");
+        _messages.Add(new ChatMessage("You", message, true));
+        ChatListBox.ScrollIntoView(_messages[^1]);
     }
 
     private void AddBotMessage(string message)
     {
-        _messages.Add($"Cyber Shield: {message}");
+        _messages.Add(new ChatMessage("Cyber Shield", message, false));
+        ChatListBox.ScrollIntoView(_messages[^1]);
     }
 
     private static void PlayGreeting()
@@ -93,14 +94,7 @@ public partial class MainWindow : Window
         {
             // Ignore playback issues and continue gracefully.
         }
-
-        try
-        {
-            Process.Start("say", "Cyber security assistant ready");
-        }
-        catch
-        {
-            // Voice is optional and should fail gracefully.
-        }
     }
+
+    private sealed record ChatMessage(string Sender, string Content, bool IsFromUser);
 }
