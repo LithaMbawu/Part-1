@@ -7,7 +7,7 @@
 
 This repository contains two related coursework deliverables: the **RaceDay Part 1 planning and database design** and the **Cybersecurity Awareness Chatbot desktop application**. This root README is the single project guide for both; the design artifacts and application source remain organized under `docs/`.
 
-- **GitHub repository:** [LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1)
+- **GitHub repository:** [LithaMbawu/Part-2](https://github.com/LithaMbawu/Part-1)
 - **Project presentation:** [Watch on YouTube](https://youtu.be/0OgLvuN1I5w)
 
 ## Contents
