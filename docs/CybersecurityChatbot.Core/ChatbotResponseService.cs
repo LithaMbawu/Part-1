@@ -173,9 +173,7 @@ public class ChatbotResponseService
     {
         return input.Contains("my name is", StringComparison.OrdinalIgnoreCase)
             || input.Contains("i am called", StringComparison.OrdinalIgnoreCase)
-            || input.Contains("i'm called", StringComparison.OrdinalIgnoreCase)
-            || input.Contains("i am", StringComparison.OrdinalIgnoreCase)
-            && input.Length < 40;
+            || input.Contains("i'm called", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractName(string input)
