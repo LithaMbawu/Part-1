@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "BMNEXQYU8po=",
+  "success": true,
+  "projectFilePath": "/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/CybersecurityChatbot.Gui.csproj",
+  "expectedPackageFiles": [
+    "/Users/lithambawu/.nuget/packages/microsoft.windowsdesktop.app.ref/10.0.5/microsoft.windowsdesktop.app.ref.10.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
