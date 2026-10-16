@@ -1,10 +1,30 @@
-name: RaceDay documentation validation
+name: Portfolio validation
 
 on:
   push:
   pull_request:
 
 jobs:
+  test-chatbot:
+    name: Build and test chatbot
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+            10.x
+
+      - name: Run chatbot tests
+        run: dotnet test docs/CybersecurityChatbot.slnx
+
+      - name: Build all solution projects
+        run: dotnet build docs/CybersecurityChatbot.slnx --no-restore
+
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -15,12 +35,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f docs/README.md
+          test -f README.md
           test -f docs/api-endpoint-plan.md
           test -f docs/raceday-erd.mmd
           test -f docs/raceday-erd-export.html
           test -f docs/raceday-erd.png
           test -f docs/raceday-schema.sql
+          test -f docs/CybersecurityChatbot.slnx
+          test -f docs/CybersecurityChatbot.Core/CybersecurityChatbot.Core.csproj
+          test -f docs/CybersecurityChatbot.Core.Tests/CybersecurityChatbot.Core.Tests.csproj
+          test -f docs/CybersecurityChatbot.Gui/CybersecurityChatbot.Gui.csproj
 
       - name: Validate ERD and SQL coverage
         shell: bash
