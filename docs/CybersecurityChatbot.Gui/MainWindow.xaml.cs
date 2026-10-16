@@ -49,6 +49,11 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ExitButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
     private void HandleUserInput()
     {
         var input = UserInputTextBox.Text.Trim();

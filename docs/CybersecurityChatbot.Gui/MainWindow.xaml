@@ -104,6 +104,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <TextBox x:Name="UserInputTextBox"
@@ -140,6 +141,17 @@
                           Foreground="White"
                           FontWeight="SemiBold"
                           Click="VoiceToggleButton_Click" />
+
+                <Button Grid.Column="3"
+                      x:Name="ExitButton"
+                      Content="Exit"
+                      Width="90"
+                      Height="52"
+                      Margin="10,0,0,0"
+                      Background="#B91C1C"
+                      Foreground="White"
+                      FontWeight="Bold"
+                      Click="ExitButton_Click" />
         </Grid>
     </Grid>
 </Window>
