@@ -7,8 +7,8 @@
 
 This repository contains two related coursework deliverables: the **RaceDay Part 1 planning and database design** and the **Cybersecurity Awareness Chatbot desktop application**. This root README is the single project guide for both; the design artifacts and application source remain organized under `docs/`.
 
-- **GitHub repository:** [LithaMbawu/Part-2](https://github.com/LithaMbawu/Part-1)
-- **Project presentation:** [Watch on YouTube](https://youtu.be/0OgLvuN1I5w)
+- **GitHub repository:** [LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1)
+- **Project presentation:** [Watch the latest presentation on YouTube](https://youtu.be/BuCVB9RGW9o)
 
 ## Contents
 
@@ -145,11 +145,11 @@ Exact wording and advice can vary because responses are selected from multiple o
 
 ## Submission and release checklist
 
-- Submit the repository link through ARC: https://github.com/LithaMbawu/Part-1.git
-- Submit the presentation link through ARC or use the YouTube link above: https://youtu.be/BuCVB9RGW9o?si=rI85jgXn26ktKE_s 
+- Submit the repository link through ARC: [LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1).
+- Submit the presentation link through ARC or use the YouTube link above. The video is listed as unlisted; confirm the assessor can access it.
 - Attach the available evidence: [CI workflow screenshot](docs/ci-workflow-screenshot.png) and [SSMS execution screenshot](docs/ssms-execution-screenshot.png). Confirm each image clearly shows the relevant successful run before submission.
 - Keep commits descriptive and tied to real project changes; do not manufacture commits to meet a count.
-- The rubric requests at least three tagged releases with version notes. Create those tags/releases in GitHub as actual milestones are completed, with accurate notes describing what each version contains. A tag is not the same as a GitHub release.
+- Three GitHub Releases with annotated version notes are published below. Keep release notes accurate if these milestones change; a tag alone is not a GitHub Release.
 
 ### Version notes
 
@@ -157,4 +157,4 @@ Exact wording and advice can vary because responses are selected from multiple o
 - **[v0.2.0 — RaceDay evidence update](https://github.com/LithaMbawu/Part-1/releases/tag/v0.2.0):** adds the CI workflow evidence while retaining the ERD, endpoint plan, and database script.
 - **[v1.0.0 — Combined coursework portfolio](https://github.com/LithaMbawu/Part-1/releases/tag/v1.0.0):** brings the RaceDay plan and Windows cybersecurity chatbot together, with persistent conversation memory, automated core tests, and a refreshed chat interface.
 
-These notes describe the corresponding repository milestones. Publish the matching annotated tags as GitHub Releases so they appear on the repository's Releases page.
+These notes describe the corresponding repository milestones and link to the published GitHub Releases.
