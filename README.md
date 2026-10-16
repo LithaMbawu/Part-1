@@ -81,7 +81,7 @@ The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersec
 - Follow-ups such as “tell me more” and “another tip” that continue the latest supported topic.
 - Simple phrase-based sentiment detection for worried, frustrated, and curious messages.
 - Local conversation memory for a name, favorite topic, most recent topic, and sentiment. Memory is saved under the current user's local application data directory and reused on the next launch. It is stored locally; remove the `CybersecurityChatbot/memory.json` file from that directory to clear it.
-- A WPF interface with aligned chat bubbles and optional playback of the bundled `voice-greeting.wav` welcome greeting. The greeting plays at launch and when enabled; it does not repeat after every chat message.
+- A WPF interface with aligned chat bubbles and optional playback of the supplied `docs/greeting.wav` welcome intro. The intro plays at launch and when enabled; it does not repeat after every chat message.
 
 The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment detection is rule-based and may not recognize every way someone expresses a feeling.
 
@@ -99,7 +99,7 @@ The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment 
 4. Restore/build the solution and press **F5**.
 5. Type a question into the chat box and press **Enter** or select **Send**. Use the voice toggle to enable or disable the greeting playback.
 
-The core and test projects target .NET 8; the WPF application targets .NET 10 for Windows and references the core project. The bundled WAV is copied to the GUI output directory at build time. Voice playback is optional and the application continues if playback is unavailable.
+The core and test projects target .NET 8; the WPF application targets .NET 10 for Windows and references the core project. The supplied intro WAV is copied to the GUI output directory at build time. Voice playback is optional and the application continues if playback is unavailable.
 
 ### Run the automated tests
 

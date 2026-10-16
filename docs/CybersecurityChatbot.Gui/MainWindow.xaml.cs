@@ -81,7 +81,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            var assetPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "voice-greeting.wav");
+            var assetPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "greeting.wav");
             if (File.Exists(assetPath))
             {
                 var player = new MediaPlayer();

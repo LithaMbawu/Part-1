@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\assets\voice-greeting.wav" Link="assets\voice-greeting.wav">
+    <None Include="..\greeting.wav" Link="assets\greeting.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\assets\cybersecurity-ascii.svg" Link="assets\cybersecurity-ascii.svg">
