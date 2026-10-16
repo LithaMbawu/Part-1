@@ -12,35 +12,28 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Publish annotated tag as a GitHub release
-        uses: actions/github-script@v7
+      - name: Check out tagged source and release notes
+        uses: actions/checkout@v4
         with:
-          script: |
-            const tagName = context.ref.replace('refs/tags/', '');
-            const { owner, repo } = context.repo;
+          fetch-depth: 0
 
-            try {
-              await github.rest.repos.getReleaseByTag({ owner, repo, tag: tagName });
-              core.info(`Release ${tagName} already exists; leaving it unchanged.`);
-              return;
-            } catch (error) {
-              if (error.status !== 404) throw error;
-            }
+      - name: Read annotated tag notes
+        id: release-notes
+        shell: bash
+        run: |
+          delimiter="$(openssl rand -hex 16)"
+          {
+            echo "body<<$delimiter"
+            git for-each-ref --format='%(contents)' "refs/tags/$GITHUB_REF_NAME"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
 
-            const ref = await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` });
-            let notes = `Release ${tagName}`;
-            if (ref.data.object.type === 'tag') {
-              const annotatedTag = await github.rest.git.getTag({ owner, repo, tag_sha: ref.data.object.sha });
-              notes = annotatedTag.data.message;
-            }
-
-            await github.rest.repos.createRelease({
-              owner,
-              repo,
-              tag_name: tagName,
-              name: tagName,
-              body: notes,
-              draft: false,
-              prerelease: false,
-              generate_release_notes: false
-            });
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.release-notes.outputs.body }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
