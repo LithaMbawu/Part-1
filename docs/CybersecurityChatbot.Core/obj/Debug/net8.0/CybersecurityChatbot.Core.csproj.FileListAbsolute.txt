@@ -1,0 +1,12 @@
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/bin/Debug/net8.0/CybersecurityChatbot.Core.deps.json
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/bin/Debug/net8.0/CybersecurityChatbot.Core.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/bin/Debug/net8.0/CybersecurityChatbot.Core.pdb
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.AssemblyInfoInputs.cache
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.AssemblyInfo.cs
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.csproj.CoreCompileInputs.cache
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.sourcelink.json
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/refint/CybersecurityChatbot.Core.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.pdb
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/ref/CybersecurityChatbot.Core.dll

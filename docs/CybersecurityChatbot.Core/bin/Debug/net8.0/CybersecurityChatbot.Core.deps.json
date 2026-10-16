@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "CybersecurityChatbot.Core/1.0.0": {
+        "runtime": {
+          "CybersecurityChatbot.Core.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CybersecurityChatbot.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
