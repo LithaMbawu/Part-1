@@ -153,8 +153,8 @@ Exact wording and advice can vary because responses are selected from multiple o
 
 ### Version notes
 
-- **v0.1.0 — RaceDay planning baseline:** initial ERD, API endpoint plan, SQL Server schema, and planning documentation.
-- **v0.2.0 — RaceDay evidence update:** adds the CI workflow evidence while retaining the ERD, endpoint plan, and database script.
-- **v1.0.0 — Combined coursework portfolio:** brings the RaceDay plan and Windows cybersecurity chatbot together, with persistent conversation memory, automated core tests, and a refreshed chat interface.
+- **[v0.1.0 — RaceDay planning baseline](https://github.com/LithaMbawu/Part-1/releases/tag/v0.1.0):** initial ERD, API endpoint plan, SQL Server schema, and planning documentation.
+- **[v0.2.0 — RaceDay evidence update](https://github.com/LithaMbawu/Part-1/releases/tag/v0.2.0):** adds the CI workflow evidence while retaining the ERD, endpoint plan, and database script.
+- **[v1.0.0 — Combined coursework portfolio](https://github.com/LithaMbawu/Part-1/releases/tag/v1.0.0):** brings the RaceDay plan and Windows cybersecurity chatbot together, with persistent conversation memory, automated core tests, and a refreshed chat interface.
 
 These notes describe the corresponding repository milestones. Publish the matching annotated tags as GitHub Releases so they appear on the repository's Releases page.
