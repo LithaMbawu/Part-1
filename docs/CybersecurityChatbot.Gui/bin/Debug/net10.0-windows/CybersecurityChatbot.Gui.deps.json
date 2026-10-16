@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "CybersecurityChatbot.Gui/1.0.0": {
+        "dependencies": {
+          "CybersecurityChatbot.Core": "1.0.0"
+        },
+        "runtime": {
+          "CybersecurityChatbot.Gui.dll": {}
+        }
+      },
+      "CybersecurityChatbot.Core/1.0.0": {
+        "runtime": {
+          "CybersecurityChatbot.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CybersecurityChatbot.Gui/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "CybersecurityChatbot.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
