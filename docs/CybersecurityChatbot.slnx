@@ -1,5 +1,6 @@
 <Solution>
 	<Project Path="CybersecurityChatbot.Core/CybersecurityChatbot.Core.csproj" />
 	<Project Path="CybersecurityChatbot.Gui/CybersecurityChatbot.Gui.csproj" />
+	<Project Path="CybersecurityChatbot.Desktop/CybersecurityChatbot.Desktop.csproj" />
 	<Project Path="CybersecurityChatbot.Core.Tests/CybersecurityChatbot.Core.Tests.csproj" />
 </Solution>
