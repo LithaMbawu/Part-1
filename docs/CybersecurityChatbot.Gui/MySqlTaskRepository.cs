@@ -3,7 +3,7 @@ using MySqlConnector;
 
 namespace CybersecurityChatbot.Gui;
 
-internal sealed class MySqlTaskRepository(string connectionString)
+public sealed class MySqlTaskRepository(string connectionString)
 {
     private readonly string _connectionString = connectionString;
 
