@@ -72,7 +72,7 @@ ORDER BY t.name;
 
 ## Cybersecurity chatbot
 
-The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersecurity awareness. Its reusable core provides keyword-based guidance, follow-up responses, simple sentiment-aware phrasing, randomized tips, and persistent personalization. The GUI has a dark chat layout, cyber-themed status branding, and an optional bundled voice greeting. The ASCII artwork is included as a project asset, but is not currently rendered in the chat window.
+The Cybersecurity Awareness Chatbot provides desktop applications for cybersecurity awareness: a Windows WPF client and a cross-platform Avalonia client for macOS, Windows, and Linux. Both share the C# core for keyword-based guidance, follow-up responses, simple sentiment-aware phrasing, randomized tips, and persistent personalization. The original WPF GUI has an optional bundled voice greeting; the ASCII artwork is included as a project asset, but is not currently rendered in the chat window.
 
 ### Features
 
@@ -81,7 +81,7 @@ The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersec
 - Follow-ups such as “tell me more” and “another tip” that continue the latest supported topic.
 - Simple phrase-based sentiment detection for worried, frustrated, and curious messages.
 - Local conversation memory for a name, favorite topic, most recent topic, and sentiment. Memory is saved under the current user's local application data directory and reused on the next launch. It is stored locally; remove the `CybersecurityChatbot/memory.json` file from that directory to clear it.
-- A WPF interface with aligned chat bubbles and optional playback of the supplied `docs/greeting.wav` welcome intro. The intro plays at launch and when enabled; it does not repeat after every chat message.
+- Desktop interfaces with aligned chat bubbles. The Windows WPF interface also has optional playback of the supplied `docs/greeting.wav` welcome intro. The intro plays at launch and when enabled; it does not repeat after every chat message.
 - A task assistant that stores task titles, descriptions, completion state, and optional reminder dates in MySQL. Tasks can be added, completed/reopened, and deleted from the GUI.
 - A 12-question cybersecurity quiz with multiple-choice and true/false questions, immediate explanations, scoring, and a final result.
 - Rule-based NLP command detection in chat for task/reminder creation, quiz launch, and activity-log requests. Natural task phrases such as “Remind me to update my password tomorrow” are supported.
@@ -91,8 +91,8 @@ The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment 
 
 ### Requirements
 
-- Windows 10 or later (the GUI uses WPF).
-- .NET 10 SDK and a compatible Visual Studio version to build and run the GUI.
+- .NET 10 SDK. The Avalonia desktop app runs on macOS, Windows, and Linux; the WPF app requires Windows 10 or later.
+- A compatible Visual Studio version is needed only to build/run the Windows WPF GUI.
 - MySQL Server 8.0 or compatible, plus a database/schema created for this application. The GUI creates its task table on first successful connection.
 - SQL Server Management Studio and access to SQL Server only if running the RaceDay database script above.
 
@@ -105,7 +105,17 @@ The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment 
 
 The reminder field stores a date/time in MySQL. The GUI date picker and natural-language date phrases currently set reminders to the start of the selected date. These are stored reminders; the app does not run as a background notification service.
 
-### Run the chatbot
+### Run the chatbot on macOS, Windows, or Linux
+
+Run the cross-platform Avalonia desktop app from the repository root:
+
+```sh
+dotnet run --project docs/CybersecurityChatbot.Desktop/CybersecurityChatbot.Desktop.csproj
+```
+
+Chat, the quiz, and the activity log work without MySQL. Configure `CYBERSECURITY_CHATBOT_MYSQL` to enable saved tasks and reminders. See [the cross-platform app notes](docs/CybersecurityChatbot.Desktop/README.md).
+
+### Run the Windows WPF chatbot
 
 1. Clone or download this repository on Windows.
 2. Open `docs/CybersecurityChatbot.slnx` in Visual Studio.
@@ -148,6 +158,7 @@ Exact wording and advice can vary because responses are selected from multiple o
     ├── CybersecurityChatbot.Core/     # Response logic and persistent memory
     ├── CybersecurityChatbot.Core.Tests/ # Core behavior and memory tests
     ├── CybersecurityChatbot.Gui/      # Windows WPF interface
+    ├── CybersecurityChatbot.Desktop/  # Cross-platform Avalonia interface
     ├── cybersecurity-chatbot-mysql.sql # MySQL database setup
     ├── assets/                        # Voice and ASCII assets
     ├── api-endpoint-plan.md
