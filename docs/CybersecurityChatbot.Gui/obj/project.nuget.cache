@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "BMNEXQYU8po=",
+  "dgSpecHash": "oE969sMkji4=",
   "success": true,
   "projectFilePath": "/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/CybersecurityChatbot.Gui.csproj",
   "expectedPackageFiles": [
+    "/Users/lithambawu/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "/Users/lithambawu/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "/Users/lithambawu/.nuget/packages/mysqlconnector/2.6.1/mysqlconnector.2.6.1.nupkg.sha512",
     "/Users/lithambawu/.nuget/packages/microsoft.windowsdesktop.app.ref/10.0.5/microsoft.windowsdesktop.app.ref.10.0.5.nupkg.sha512"
   ],
   "logs": []
