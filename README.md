@@ -82,6 +82,10 @@ The Cybersecurity Awareness Chatbot is a C# WPF desktop application for cybersec
 - Simple phrase-based sentiment detection for worried, frustrated, and curious messages.
 - Local conversation memory for a name, favorite topic, most recent topic, and sentiment. Memory is saved under the current user's local application data directory and reused on the next launch. It is stored locally; remove the `CybersecurityChatbot/memory.json` file from that directory to clear it.
 - A WPF interface with aligned chat bubbles and optional playback of the supplied `docs/greeting.wav` welcome intro. The intro plays at launch and when enabled; it does not repeat after every chat message.
+- A task assistant that stores task titles, descriptions, completion state, and optional reminder dates in MySQL. Tasks can be added, completed/reopened, and deleted from the GUI.
+- A 12-question cybersecurity quiz with multiple-choice and true/false questions, immediate explanations, scoring, and a final result.
+- Rule-based NLP command detection in chat for task/reminder creation, quiz launch, and activity-log requests. Natural task phrases such as “Remind me to update my password tomorrow” are supported.
+- A recent activity log that records the latest 10 task, reminder, quiz, and recognized-command actions; ask “show activity log” or “what have you done for me?” in chat.
 
 The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment detection is rule-based and may not recognize every way someone expresses a feeling.
 
@@ -89,7 +93,17 @@ The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment 
 
 - Windows 10 or later (the GUI uses WPF).
 - .NET 10 SDK and a compatible Visual Studio version to build and run the GUI.
+- MySQL Server 8.0 or compatible, plus a database/schema created for this application. The GUI creates its task table on first successful connection.
 - SQL Server Management Studio and access to SQL Server only if running the RaceDay database script above.
+
+### Configure the task database
+
+1. Start MySQL and create the application database by running `docs/cybersecurity-chatbot-mysql.sql` in a MySQL client.
+2. Set the `CYBERSECURITY_CHATBOT_MYSQL` environment variable to a MySQL connection string for that database. Example format: `Server=localhost;Port=3306;Database=cybersecurity_chatbot;User ID=YOUR_USER;Password=YOUR_PASSWORD;`.
+3. Keep credentials out of source control. Set the variable in the environment used to launch Visual Studio/the application, then restart the application so it can read the updated value.
+4. On launch, the application creates the `CybersecurityTasks` table if needed and loads saved tasks. If MySQL is not configured or available, chat, the quiz, and the in-memory activity log still work, while task storage is disabled.
+
+The reminder field stores a date/time in MySQL. The GUI date picker and natural-language date phrases currently set reminders to the start of the selected date. These are stored reminders; the app does not run as a background notification service.
 
 ### Run the chatbot
 
@@ -134,6 +148,7 @@ Exact wording and advice can vary because responses are selected from multiple o
     ├── CybersecurityChatbot.Core/     # Response logic and persistent memory
     ├── CybersecurityChatbot.Core.Tests/ # Core behavior and memory tests
     ├── CybersecurityChatbot.Gui/      # Windows WPF interface
+    ├── cybersecurity-chatbot-mysql.sql # MySQL database setup
     ├── assets/                        # Voice and ASCII assets
     ├── api-endpoint-plan.md
     ├── raceday-erd.mmd
