@@ -2,8 +2,6 @@
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/MainWindow.g.cs
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/App.g.cs
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/CybersecurityChatbot.Gui_MarkupCompile.cache
-/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/CybersecurityChatbot.Gui_MarkupCompile.lref
-/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/assets/voice-greeting.wav
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/assets/cybersecurity-ascii.svg
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/CybersecurityChatbot.Gui
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/CybersecurityChatbot.Gui.deps.json
@@ -25,3 +23,7 @@
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/CybersecurityChatbot.Gui.pdb
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/CybersecurityChatbot.Gui.genruntimeconfig.cache
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/obj/Debug/net10.0-windows/ref/CybersecurityChatbot.Gui.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/assets/greeting.wav
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Gui/bin/Debug/net10.0-windows/MySqlConnector.dll

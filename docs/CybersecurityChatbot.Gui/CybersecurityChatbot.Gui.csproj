@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CybersecurityChatbot.Core\CybersecurityChatbot.Core.csproj" />
+    <PackageReference Include="MySqlConnector" Version="2.6.1" />
   </ItemGroup>
 
   <ItemGroup>
