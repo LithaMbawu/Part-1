@@ -136,6 +136,8 @@
                     </Grid>
                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                         <Button Content="Mark complete / reopen" Click="ToggleTaskCompletedButton_Click" />
+                        <Button Content="Update reminder" Margin="8,0,0,0" Click="UpdateTaskReminderButton_Click" />
+                        <Button Content="Clear reminder" Margin="8,0,0,0" Click="ClearTaskReminderButton_Click" />
                         <Button Content="Delete selected" Margin="8,0,0,0" Background="#B91C1C" Click="DeleteTaskButton_Click" />
                     </StackPanel>
                 </Grid>
@@ -172,14 +174,18 @@
 
             <TabItem Header="Activity log">
                 <Grid Margin="20">
-                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <StackPanel>
                         <TextBlock Text="Recent activity" Foreground="#67E8F9" FontSize="21" FontWeight="Bold" />
-                        <TextBlock Text="The latest 10 chatbot actions are shown here and in response to “show activity log”."
+                        <TextBlock Text="Actions are categorized and timestamped. Start with the latest 10, then show more as needed."
                                    Foreground="#94A3B8" Margin="0,5,0,14" />
                     </StackPanel>
                     <ListBox x:Name="ActivityListBox" Grid.Row="1" Background="#0F172A" Foreground="#E2E8F0"
                              BorderBrush="#334155" Padding="10" />
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <TextBlock x:Name="ActivityCountText" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Button x:Name="ShowMoreActivityButton" Content="Show 10 more" Click="ShowMoreActivityButton_Click" Visibility="Collapsed" />
+                    </StackPanel>
                 </Grid>
             </TabItem>
         </TabControl>

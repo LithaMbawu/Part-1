@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,6 +13,7 @@ public partial class MainWindow : Window
     private readonly ChatbotResponseService _chatbot = new();
     private readonly ChatbotMemory _memory = new();
     private readonly QuizService _quiz = new();
+    private readonly ActivityLog _activityLog = new();
     private readonly ObservableCollection<ChatMessage> _messages = new();
     private readonly ObservableCollection<CybersecurityTask> _tasks = new();
     private readonly ObservableCollection<string> _activity = new();
@@ -27,6 +27,7 @@ public partial class MainWindow : Window
         ChatListBox.ItemsSource = _messages;
         TaskListDataGrid.ItemsSource = _tasks;
         ActivityListBox.ItemsSource = _activity;
+        RefreshActivityItems();
         Loaded += MainWindow_Loaded;
         AddBotMessage("Welcome! I can help with cybersecurity advice, task reminders, and a short security quiz. Try “add a task to enable 2FA”, “start quiz”, or “show activity log”.");
 
@@ -104,6 +105,22 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (ContainsAny(input, "show more activity", "more activity", "show more actions"))
+        {
+            _activityLog.ShowMore();
+            RefreshActivityItems();
+            AddBotMessage(FormatActivityLog());
+            return;
+        }
+
+        if (ContainsAny(input, "show all activity", "all activity", "full activity log"))
+        {
+            _activityLog.ShowAll();
+            RefreshActivityItems();
+            AddBotMessage(FormatActivityLog());
+            return;
+        }
+
         if (ContainsAny(input, "start quiz", "start the quiz", "cyber quiz", "quiz game", "take a quiz"))
         {
             StartQuiz();
@@ -114,7 +131,7 @@ public partial class MainWindow : Window
 
         if (_pendingReminderTaskId.HasValue && ContainsAny(input, "yes", "remind me", "set a reminder", "in "))
         {
-            var reminderAt = ParseReminderDate(input);
+            var reminderAt = TaskRequestParser.ParseReminderDate(input, DateTime.Today);
             if (reminderAt.HasValue)
             {
                 await SetPendingReminderAsync(reminderAt.Value);
@@ -122,10 +139,10 @@ public partial class MainWindow : Window
             }
         }
 
-        if (TryExtractTask(input, out var title, out var reminderDate))
+        if (TaskRequestParser.TryParse(input, out var taskRequest))
         {
             LogAction("NLP interpreted a task/reminder request.");
-            await AddTaskFromChatAsync(title, reminderDate);
+            await AddTaskFromChatAsync(taskRequest.Title, taskRequest.ReminderAt);
             return;
         }
 
@@ -284,6 +301,53 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void UpdateTaskReminderButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (TaskListDataGrid.SelectedItem is not CybersecurityTask task || _taskRepository is null)
+        {
+            MessageBox.Show("Select a task first.", "Task required", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (ReminderDatePicker.SelectedDate?.Date is not DateTime reminderAt || reminderAt < DateTime.Today)
+        {
+            MessageBox.Show("Choose today or a future reminder date.", "Reminder date required", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            await _taskRepository.SetReminderAsync(task.Id, reminderAt);
+            await ReloadTasksAsync();
+            LogAction($"Reminder updated for '{task.Title}' to {reminderAt:yyyy-MM-dd}.");
+        }
+        catch (MySqlConnector.MySqlException)
+        {
+            MessageBox.Show("The reminder could not be updated in MySQL.", "Database error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void ClearTaskReminderButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (TaskListDataGrid.SelectedItem is not CybersecurityTask task || _taskRepository is null)
+        {
+            MessageBox.Show("Select a task first.", "Task required", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            await _taskRepository.SetReminderAsync(task.Id, null);
+            await ReloadTasksAsync();
+            LogAction($"Reminder cleared for '{task.Title}'.");
+            ReminderDatePicker.SelectedDate = null;
+        }
+        catch (MySqlConnector.MySqlException)
+        {
+            MessageBox.Show("The reminder could not be cleared in MySQL.", "Database error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async Task ReloadTasksAsync()
     {
         if (_taskRepository is null)
@@ -395,62 +459,42 @@ public partial class MainWindow : Window
 
     private void LogAction(string description)
     {
-        _activity.Insert(0, $"{DateTime.Now:yyyy-MM-dd HH:mm} — {description}");
-        while (_activity.Count > 10)
+        var category = description.StartsWith("Task", StringComparison.OrdinalIgnoreCase) ? "Task"
+            : description.StartsWith("Reminder", StringComparison.OrdinalIgnoreCase) ? "Reminder"
+            : description.StartsWith("Cybersecurity quiz", StringComparison.OrdinalIgnoreCase) ? "Quiz"
+            : description.StartsWith("Activity log", StringComparison.OrdinalIgnoreCase) ? "Activity"
+            : "Chat";
+        _activityLog.Add(category, description);
+        RefreshActivityItems();
+    }
+
+    private void RefreshActivityItems()
+    {
+        _activity.Clear();
+        foreach (var entry in _activityLog.VisibleEntries)
         {
-            _activity.RemoveAt(_activity.Count - 1);
+            _activity.Add(entry.DisplayText);
         }
+
+        ShowMoreActivityButton.Visibility = _activityLog.HasMore ? Visibility.Visible : Visibility.Collapsed;
+        ActivityCountText.Text = $"Showing {_activityLog.VisibleCount} of {_activityLog.TotalCount} actions";
+    }
+
+    private void ShowMoreActivityButton_Click(object sender, RoutedEventArgs e)
+    {
+        _activityLog.ShowMore();
+        RefreshActivityItems();
     }
 
     private string FormatActivityLog()
     {
-        if (_activity.Count == 0)
+        if (_activityLog.TotalCount == 0)
         {
             return "There are no recorded actions yet. Add a task or start the quiz to begin your activity log.";
         }
 
-        return "Here's a summary of recent actions:\n" + string.Join("\n", _activity.Select((entry, index) => $"{index + 1}. {entry}"));
-    }
-
-    private static bool TryExtractTask(string input, out string title, out DateTime? reminderAt)
-    {
-        title = string.Empty;
-        reminderAt = ParseReminderDate(input);
-        var match = Regex.Match(input,
-            @"^(?:(?:please\s+)?(?:can\s+you\s+)?(?:add|create|make)\s+(?:a\s+)?(?:cybersecurity\s+)?(?:task|reminder)\s*(?:to\s+)?|(?:please\s+)?(?:can\s+you\s+)?set\s+(?:(?:up\s+)?(?:a\s+)?(?:cybersecurity\s+)?(?:task|reminder))\s*(?:to\s+)?|(?:please\s+)?(?:can\s+you\s+)?remind\s+me\s+(?:to|about)\s+|(?:please\s+)?remember\s+to\s+)(?<title>.+)$",
-            RegexOptions.IgnoreCase);
-        if (!match.Success)
-        {
-            return false;
-        }
-
-        title = Regex.Replace(match.Groups["title"].Value,
-            @"\s+(?:(?:tomorrow)|(?:in\s+\d+\s+(?:days?|weeks?))|(?:on\s+\d{4}-\d{1,2}-\d{1,2}))\s*[.!?]*$",
-            string.Empty, RegexOptions.IgnoreCase).Trim().TrimEnd('.', '!', '?');
-        return title.Length > 0;
-    }
-
-    private static DateTime? ParseReminderDate(string input)
-    {
-        if (Regex.IsMatch(input, @"\btomorrow\b", RegexOptions.IgnoreCase))
-        {
-            return DateTime.Today.AddDays(1);
-        }
-
-        var interval = Regex.Match(input, @"\bin\s+(?<amount>\d+)\s+(?<unit>days?|weeks?)\b", RegexOptions.IgnoreCase);
-        if (interval.Success && int.TryParse(interval.Groups["amount"].Value, out var amount) && amount is > 0 and <= 3650)
-        {
-            var days = interval.Groups["unit"].Value.StartsWith("week", StringComparison.OrdinalIgnoreCase) ? amount * 7 : amount;
-            return DateTime.Today.AddDays(days);
-        }
-
-        var dateMatch = Regex.Match(input, @"\bon\s+(?<date>\d{4}-\d{1,2}-\d{1,2})\b", RegexOptions.IgnoreCase);
-        if (dateMatch.Success && DateTime.TryParse(dateMatch.Groups["date"].Value, out var parsedDate))
-        {
-            return parsedDate.Date;
-        }
-
-        return null;
+        return "Here's a summary of recent actions:\n" + string.Join("\n", _activityLog.VisibleEntries.Select((entry, index) => $"{index + 1}. {entry.DisplayText}"))
+            + (_activityLog.HasMore ? "\nSay ‘show more activity’ or ‘show all activity’ to view older actions." : string.Empty);
     }
 
     private static bool ContainsAny(string input, params string[] phrases) =>

@@ -6,6 +6,7 @@
   <Grid RowDefinitions="Auto,*" Margin="22">
     <Border Grid.Row="0" Background="#111827" BorderBrush="#263449" BorderThickness="1"
             CornerRadius="18" Padding="18" Margin="0,0,0,16">
+      <Grid ColumnDefinitions="*,Auto">
       <StackPanel Spacing="4">
         <TextBlock Text="CYBER SHIELD ASSISTANT" Foreground="#67E8F9" FontSize="23"
                    FontWeight="Bold" HorizontalAlignment="Center" />
@@ -14,6 +15,8 @@
         <TextBlock Text="Your digital safety coach for passwords, scams, privacy, and phishing awareness."
                    Foreground="#E5E7EB" FontSize="14" HorizontalAlignment="Center" />
       </StackPanel>
+      <Button Grid.Column="1" Content="Quit" VerticalAlignment="Top" Click="Quit_Click" />
+      </Grid>
     </Border>
 
     <TabControl x:Name="MainTabs" Grid.Row="1">
@@ -55,6 +58,8 @@
               <TextBox x:Name="TaskTitle" Watermark="Task title" MaxLength="200" />
               <TextBox x:Name="TaskDescription" Watermark="Description" AcceptsReturn="True" TextWrapping="Wrap"
                        MinHeight="100" MaxLength="2000" />
+              <TextBlock Text="Optional reminder date" Foreground="#94A3B8" FontSize="12" />
+              <DatePicker x:Name="ReminderDatePicker" />
               <Button x:Name="AddTaskButton" Content="Save task" Click="AddTask_Click" Background="#0891B2" />
               <TextBlock Text="To add a reminder, ask in chat, e.g. ‘Remind me to update my password tomorrow’."
                          Foreground="#94A3B8" TextWrapping="Wrap" FontSize="12" />
@@ -72,10 +77,12 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0" Spacing="8">
-              <Button Content="Complete / reopen" Click="ToggleTask_Click" />
-              <Button Content="Delete selected" Click="DeleteTask_Click" Background="#B91C1C" />
-            </StackPanel>
+            <WrapPanel Grid.Row="1" HorizontalAlignment="Right" Margin="0,10,0,0">
+              <Button Content="Complete / reopen" Click="ToggleTask_Click" Margin="0,0,8,6" />
+              <Button Content="Update reminder" Click="UpdateReminder_Click" Margin="0,0,8,6" />
+              <Button Content="Clear reminder" Click="ClearReminder_Click" Margin="0,0,8,6" />
+              <Button Content="Delete selected" Click="DeleteTask_Click" Background="#B91C1C" Margin="0,0,0,6" />
+            </WrapPanel>
           </Grid>
         </Grid>
       </TabItem>
@@ -103,13 +110,17 @@
       </TabItem>
 
       <TabItem Header="Activity log">
-        <Grid RowDefinitions="Auto,*" Margin="18">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="18">
           <StackPanel Margin="0,0,0,12" Spacing="4">
             <TextBlock Text="Recent activity" Foreground="#67E8F9" FontSize="21" FontWeight="Bold" />
-            <TextBlock Text="The latest 10 chatbot actions are shown here and in response to ‘show activity log’."
+            <TextBlock Text="Actions are grouped and timestamped. Start with the latest 10, then show more as needed."
                        Foreground="#94A3B8" />
           </StackPanel>
           <ListBox x:Name="ActivityItems" Grid.Row="1" Background="#0F172A" />
+          <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0" Spacing="12">
+            <TextBlock x:Name="ActivityCountText" VerticalAlignment="Center" Foreground="#94A3B8" />
+            <Button x:Name="ShowMoreActivityButton" Content="Show 10 more" Click="ShowMoreActivity_Click" IsVisible="False" />
+          </StackPanel>
         </Grid>
       </TabItem>
     </TabControl>

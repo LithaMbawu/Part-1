@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly ChatbotResponseService _chatbot = new();
     private readonly ChatbotMemory _memory = new();
     private readonly QuizService _quiz = new();
+    private readonly ActivityLog _activityLog = new();
     private readonly ObservableCollection<ChatMessage> _messages = new();
     private readonly ObservableCollection<TaskViewModel> _tasks = new();
     private readonly ObservableCollection<string> _activity = new();
@@ -60,6 +61,14 @@ public partial class MainWindow : Window
 
     private async void Send_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => await HandleUserInputAsync();
 
+    private void Quit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
     private async void UserInput_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
@@ -84,6 +93,21 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (ContainsAny(input, "show more activity", "more activity", "show more actions"))
+        {
+            ShowMoreActivity_Click(this, new Avalonia.Interactivity.RoutedEventArgs());
+            AddBotMessage(FormatActivityLog());
+            return;
+        }
+
+        if (ContainsAny(input, "show all activity", "all activity", "full activity log"))
+        {
+            _activityLog.ShowAll();
+            RefreshActivityItems();
+            AddBotMessage(FormatActivityLog());
+            return;
+        }
+
         if (ContainsAny(input, "start quiz", "start the quiz", "cyber quiz", "quiz game", "take a quiz"))
         {
             StartQuiz();
@@ -94,7 +118,7 @@ public partial class MainWindow : Window
 
         if (_pendingReminderTaskId.HasValue && ContainsAny(input, "yes", "remind me", "set a reminder", "in "))
         {
-            var reminderAt = ParseReminderDate(input);
+            var reminderAt = TaskRequestParser.ParseReminderDate(input, DateTime.Today);
             if (reminderAt.HasValue)
             {
                 await SetPendingReminderAsync(reminderAt.Value);
@@ -102,10 +126,10 @@ public partial class MainWindow : Window
             }
         }
 
-        if (TryExtractTask(input, out var title, out var reminderDate))
+        if (TaskRequestParser.TryParse(input, out var taskRequest))
         {
             LogAction("NLP interpreted a task/reminder request.");
-            await AddTaskFromChatAsync(title, reminderDate);
+            await AddTaskFromChatAsync(taskRequest.Title, taskRequest.ReminderAt);
             return;
         }
 
@@ -182,12 +206,19 @@ public partial class MainWindow : Window
         }
         try
         {
-            await _taskRepository.AddAsync(title, description, null);
+            var reminderAt = ReminderDatePicker.SelectedDate?.Date;
+            if (reminderAt < DateTime.Today)
+            {
+                await ShowMessageAsync("Choose today or a future date for the reminder.");
+                return;
+            }
+            await _taskRepository.AddAsync(title, description, reminderAt);
             await ReloadTasksAsync();
-            LogAction($"Task added: '{title}'.");
-            AddBotMessage($"Task added: '{title}'. Would you like a reminder?");
+            LogAction(reminderAt.HasValue ? $"Task added: '{title}' with reminder {reminderAt:yyyy-MM-dd}." : $"Task added: '{title}'.");
+            AddBotMessage(reminderAt.HasValue ? $"Task added: '{title}'. Reminder set for {reminderAt:yyyy-MM-dd}." : $"Task added: '{title}'. Would you like a reminder?");
             TaskTitle.Clear();
             TaskDescription.Clear();
+            ReminderDatePicker.SelectedDate = null;
         }
         catch (MySqlConnector.MySqlException)
         {
@@ -221,6 +252,53 @@ public partial class MainWindow : Window
             AddBotMessage($"Task '{task.Title}' was deleted.");
         }
         catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The task could not be deleted from MySQL."); }
+    }
+
+    private async void UpdateReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TaskItems.SelectedItem is not TaskViewModel task || _taskRepository is null)
+        {
+            await ShowMessageAsync("Select a task first.");
+            return;
+        }
+
+        if (ReminderDatePicker.SelectedDate is not DateTimeOffset selectedDate)
+        {
+            await ShowMessageAsync("Choose a reminder date first.");
+            return;
+        }
+
+        var reminderAt = selectedDate.Date;
+        if (reminderAt < DateTime.Today)
+        {
+            await ShowMessageAsync("Choose today or a future date for the reminder.");
+            return;
+        }
+
+        try
+        {
+            await _taskRepository.SetReminderAsync(task.Id, reminderAt);
+            await ReloadTasksAsync();
+            LogAction($"Reminder updated for '{task.Title}' to {reminderAt:yyyy-MM-dd}.");
+        }
+        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The reminder could not be updated in MySQL."); }
+    }
+
+    private async void ClearReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TaskItems.SelectedItem is not TaskViewModel task || _taskRepository is null)
+        {
+            await ShowMessageAsync("Select a task first.");
+            return;
+        }
+
+        try
+        {
+            await _taskRepository.SetReminderAsync(task.Id, null);
+            await ReloadTasksAsync();
+            LogAction($"Reminder cleared for '{task.Title}'.");
+        }
+        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The reminder could not be cleared in MySQL."); }
     }
 
     private async Task ReloadTasksAsync()
@@ -301,40 +379,33 @@ public partial class MainWindow : Window
 
     private void LogAction(string description)
     {
-        _activity.Insert(0, $"{DateTime.Now:yyyy-MM-dd HH:mm} — {description}");
-        while (_activity.Count > 10) _activity.RemoveAt(_activity.Count - 1);
+        var category = description.StartsWith("Task", StringComparison.OrdinalIgnoreCase) ? "Task"
+            : description.StartsWith("Reminder", StringComparison.OrdinalIgnoreCase) ? "Reminder"
+            : description.StartsWith("Cybersecurity quiz", StringComparison.OrdinalIgnoreCase) ? "Quiz"
+            : description.StartsWith("Activity log", StringComparison.OrdinalIgnoreCase) ? "Activity"
+            : "Chat";
+        _activityLog.Add(category, description);
+        RefreshActivityItems();
     }
 
-    private string FormatActivityLog() => _activity.Count == 0
+    private void RefreshActivityItems()
+    {
+        _activity.Clear();
+        foreach (var entry in _activityLog.VisibleEntries) _activity.Add(entry.DisplayText);
+        ShowMoreActivityButton.IsVisible = _activityLog.HasMore;
+        ActivityCountText.Text = $"Showing {_activityLog.VisibleCount} of {_activityLog.TotalCount} actions";
+    }
+
+    private void ShowMoreActivity_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _activityLog.ShowMore();
+        RefreshActivityItems();
+    }
+
+    private string FormatActivityLog() => _activityLog.TotalCount == 0
         ? "There are no recorded actions yet. Add a task or start the quiz to begin your activity log."
-        : "Here's a summary of recent actions:\n" + string.Join("\n", _activity.Select((entry, index) => $"{index + 1}. {entry}"));
-
-    private static bool TryExtractTask(string input, out string title, out DateTime? reminderAt)
-    {
-        title = string.Empty;
-        reminderAt = ParseReminderDate(input);
-        var match = Regex.Match(input,
-            @"^(?:(?:please\s+)?(?:can\s+you\s+)?(?:add|create|make)\s+(?:a\s+)?(?:cybersecurity\s+)?(?:task|reminder)\s*(?:to\s+)?|(?:please\s+)?(?:can\s+you\s+)?set\s+(?:(?:up\s+)?(?:a\s+)?(?:cybersecurity\s+)?(?:task|reminder))\s*(?:to\s+)?|(?:please\s+)?(?:can\s+you\s+)?remind\s+me\s+(?:to|about)\s+|(?:please\s+)?remember\s+to\s+)(?<title>.+)$",
-            RegexOptions.IgnoreCase);
-        if (!match.Success) return false;
-        title = Regex.Replace(match.Groups["title"].Value,
-            @"\s+(?:(?:tomorrow)|(?:in\s+\d+\s+(?:days?|weeks?))|(?:on\s+\d{4}-\d{1,2}-\d{1,2}))\s*[.!?]*$",
-            string.Empty, RegexOptions.IgnoreCase).Trim().TrimEnd('.', '!', '?');
-        return title.Length > 0;
-    }
-
-    private static DateTime? ParseReminderDate(string input)
-    {
-        if (Regex.IsMatch(input, @"\btomorrow\b", RegexOptions.IgnoreCase)) return DateTime.Today.AddDays(1);
-        var interval = Regex.Match(input, @"\bin\s+(?<amount>\d+)\s+(?<unit>days?|weeks?)\b", RegexOptions.IgnoreCase);
-        if (interval.Success && int.TryParse(interval.Groups["amount"].Value, out var amount) && amount is > 0 and <= 3650)
-        {
-            var days = interval.Groups["unit"].Value.StartsWith("week", StringComparison.OrdinalIgnoreCase) ? amount * 7 : amount;
-            return DateTime.Today.AddDays(days);
-        }
-        var dateMatch = Regex.Match(input, @"\bon\s+(?<date>\d{4}-\d{1,2}-\d{1,2})\b", RegexOptions.IgnoreCase);
-        return dateMatch.Success && DateTime.TryParse(dateMatch.Groups["date"].Value, out var parsedDate) ? parsedDate.Date : null;
-    }
+        : "Here's a summary of recent actions:\n" + string.Join("\n", _activityLog.VisibleEntries.Select((entry, index) => $"{index + 1}. {entry.DisplayText}"))
+            + (_activityLog.HasMore ? "\nSay ‘show more activity’ or ‘show all activity’ to view older actions." : string.Empty);
 
     private static bool ContainsAny(string input, params string[] phrases) =>
         phrases.Any(phrase => input.Contains(phrase, StringComparison.OrdinalIgnoreCase));
