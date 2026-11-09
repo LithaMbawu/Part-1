@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -13,6 +14,14 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            desktop.MainWindow.Closing += (_, args) =>
+            {
+                if (args.CloseReason == WindowCloseReason.WindowClosing && !args.IsProgrammatic)
+                {
+                    args.Cancel = true;
+                }
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

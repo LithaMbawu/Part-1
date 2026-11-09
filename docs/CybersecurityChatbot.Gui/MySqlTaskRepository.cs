@@ -78,13 +78,13 @@ public sealed class MySqlTaskRepository(string connectionString)
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task SetReminderAsync(long id, DateTime reminderAt)
+    public async Task SetReminderAsync(long id, DateTime? reminderAt)
     {
         await using var connection = new MySqlConnection(_connectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText = "UPDATE CybersecurityTasks SET ReminderAt = @reminderAt WHERE Id = @id";
-        command.Parameters.AddWithValue("@reminderAt", reminderAt);
+        command.Parameters.AddWithValue("@reminderAt", reminderAt is null ? DBNull.Value : reminderAt.Value);
         command.Parameters.AddWithValue("@id", id);
         await command.ExecuteNonQueryAsync();
     }
