@@ -38,6 +38,31 @@ public class ChatbotResponseService
             "Avoid downloading files from unverified sources and email attachments from unknown senders.",
             "Scan new downloads and use a reputable security tool to protect your device."
         },
+        ["multi-factor authentication"] = new[]
+        {
+            "Turn on multi-factor authentication for important accounts. Prefer an authenticator app or security key when available, and keep recovery codes private.",
+            "A second sign-in factor helps protect an account if its password is exposed. Never share one-time verification codes."
+        },
+        ["social engineering"] = new[]
+        {
+            "Social engineering relies on pressure or impersonation. Pause, verify through a separate trusted channel, and follow your organisation's reporting process.",
+            "A convincing caller can still be an impersonator. Never share sign-in codes; contact the organisation using a known official number."
+        },
+        ["identity theft"] = new[]
+        {
+            "Use unique passwords, multi-factor authentication, and account alerts. Share personal information only when necessary and through verified channels.",
+            "If your identity may be misused, contact affected institutions using their official details and follow local identity-protection guidance."
+        },
+        ["backup"] = new[]
+        {
+            "Keep regular backups of important files, with at least one copy separate from your everyday device or account.",
+            "Test that you can restore important files from your backup; a backup you cannot restore may not help when needed."
+        },
+        ["wifi"] = new[]
+        {
+            "Use trusted networks for sensitive activity. Verify a hotspot name before joining, and use your mobile connection if a public network seems suspicious.",
+            "Keep your home router updated, change its default admin password, and use modern Wi-Fi security settings."
+        },
         ["safe"] = new[]
         {
             "Good security habits include using unique passwords, enabling verification steps, and staying alert to suspicious messages.",
@@ -92,24 +117,33 @@ public class ChatbotResponseService
             }
         }
 
-        if (ContainsAny(input, "tell me more", "explain more", "another tip", "continue", "more details"))
+        if (ContainsAny(input, "tell me more", "explain more", "another tip", "continue", "more details", "what else", "why"))
         {
             return ContinueCurrentTopic(memory, sentiment);
         }
 
         if (ContainsAny(input, "hello", "hi", "hey", "good morning", "good evening"))
         {
-            return BuildSentimentResponse("Hello! I’m your cybersecurity assistant. Ask about passwords, scams, privacy, or phishing and I’ll help you stay secure.", sentiment);
+            var greeting = string.IsNullOrWhiteSpace(memory.UserName) ? "Hello!" : $"Hello, {memory.UserName}!";
+            return BuildSentimentResponse($"{greeting} I’m your cybersecurity assistant. Ask about passwords, scams, privacy, phishing, malware, or safe online habits.", sentiment);
         }
 
-        foreach (var keyword in _keywordResponses.Keys)
+        if (ContainsAny(input, "thank you", "thanks", "appreciate it"))
         {
-            if (input.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-            {
-                var response = GetRandomResponse(_keywordResponses[keyword]);
-                memory.TrackTopic(keyword);
-                return BuildSentimentResponse(ApplyPersonalisation(response, memory), sentiment);
-            }
+            return BuildSentimentResponse("You’re welcome. Ask me to explain more or give you another security tip any time.", sentiment);
+        }
+
+        if (ContainsAny(input, "what can you do", "help menu", "what topics", "what do you know"))
+        {
+            return "I can discuss passwords, phishing, scams, privacy, malware, multi-factor authentication, social engineering, identity protection, backups, Wi-Fi, tasks, reminders, the quiz, and activity history.";
+        }
+
+        var matchedTopic = FindTopic(input);
+        if (matchedTopic is not null)
+        {
+            var response = GetRandomResponse(_keywordResponses[matchedTopic]);
+            memory.TrackTopic(matchedTopic);
+            return BuildSentimentResponse(ApplyPersonalisation(response, memory), sentiment);
         }
 
         if (ContainsAny(input, "phishing tip", "give me a phishing tip", "phishing"))
@@ -124,23 +158,65 @@ public class ChatbotResponseService
             return BuildSentimentResponse(GetRandomResponse(_generalTips), sentiment);
         }
 
-        if (!string.IsNullOrWhiteSpace(memory.FavouriteTopic) && input.Contains(memory.FavouriteTopic, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(memory.FavouriteTopic) && FindTopic(input) == memory.FavouriteTopic)
         {
             return BuildSentimentResponse($"Since you’re interested in {memory.FavouriteTopic}, here is a useful reminder: {GetRandomResponse(_keywordResponses[memory.FavouriteTopic])}.", sentiment);
         }
 
-        return "I’m not sure I understand. Can you try rephrasing? I can help with password safety, scams, privacy, phishing, and general cybersecurity advice.";
+        var topicHint = GetLikelyTopicHint(input);
+        return topicHint is null
+            ? "I’m not sure I understood. Could you rephrase or name the security topic? I can help with passwords, phishing, scams, privacy, malware, MFA, backups, and Wi-Fi safety."
+            : $"Are you asking about {topicHint}? Tell me a little more and I’ll give relevant safety guidance. I can also help with passwords, phishing, scams, privacy, malware, MFA, backups, and Wi-Fi safety.";
+    }
+
+    private static readonly IReadOnlyDictionary<string, string> TopicAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["password"] = "password", ["passwords"] = "password", ["passphrase"] = "password", ["passphrases"] = "password",
+        ["scam"] = "scam", ["scams"] = "scam", ["fraud"] = "scam", ["fraudulent"] = "scam",
+        ["privacy"] = "privacy", ["private"] = "privacy", ["data protection"] = "privacy",
+        ["phishing"] = "phishing", ["phish"] = "phishing", ["smishing"] = "phishing", ["email scam"] = "phishing",
+        ["malware"] = "malware", ["virus"] = "malware", ["ransomware"] = "malware", ["spyware"] = "malware",
+        ["security"] = "safe", ["safety"] = "safe", ["safe"] = "safe", ["online safety"] = "safe",
+        ["multi factor authentication"] = "multi-factor authentication", ["multifactor authentication"] = "multi-factor authentication",
+        ["two factor authentication"] = "multi-factor authentication", ["two factor"] = "multi-factor authentication",
+        ["2fa"] = "multi-factor authentication", ["mfa"] = "multi-factor authentication",
+        ["social engineering"] = "social engineering", ["identity theft"] = "identity theft", ["identity fraud"] = "identity theft",
+        ["backup"] = "backup", ["backups"] = "backup", ["back up"] = "backup",
+        ["wifi"] = "wifi", ["wi fi"] = "wifi", ["wireless network"] = "wifi", ["public network"] = "wifi"
+    };
+
+    private static string? FindTopic(string input)
+    {
+        var normalized = Regex.Replace(input.ToLowerInvariant(), @"[^a-z0-9]+", " ").Trim();
+        foreach (var (alias, topic) in TopicAliases.OrderByDescending(item => item.Key.Length))
+        {
+            if (Regex.IsMatch(normalized, $@"\b{Regex.Escape(alias)}\b", RegexOptions.IgnoreCase))
+            {
+                return topic;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? GetLikelyTopicHint(string input)
+    {
+        if (ContainsAny(input, "hacked", "account taken over", "someone logged in")) return "account security and recovery";
+        if (ContainsAny(input, "link", "attachment", "email", "text message", "sms")) return "suspicious messages and phishing";
+        if (ContainsAny(input, "phone", "laptop", "computer", "device")) return "device security";
+        if (ContainsAny(input, "code", "verification", "sign in", "login")) return "sign-in security and verification codes";
+        return null;
     }
 
     private string ContinueCurrentTopic(ChatbotMemory memory, string sentiment)
     {
-        if (!string.IsNullOrWhiteSpace(memory.LastTopic) && _keywordResponses.ContainsKey(memory.LastTopic))
+        if (!string.IsNullOrWhiteSpace(memory.LastTopic) && _keywordResponses.TryGetValue(memory.LastTopic, out var responses))
         {
-            var topicMessage = $"Absolutely — let’s keep talking about {memory.LastTopic}. {GetRandomResponse(_keywordResponses[memory.LastTopic])}";
+            var topicMessage = $"Absolutely — let’s keep talking about {memory.LastTopic}. {GetRandomResponse(responses)}";
             return BuildSentimentResponse(topicMessage, sentiment);
         }
 
-        return BuildSentimentResponse("Of course. A good place to start is password safety: use a long, unique password and switch on two-factor authentication for important accounts.", sentiment);
+        return BuildSentimentResponse("Of course. A good place to start is password safety: use a long, unique password and switch on multi-factor authentication for important accounts.", sentiment);
     }
 
     private string BuildSentimentResponse(string response, string sentiment)
@@ -173,7 +249,8 @@ public class ChatbotResponseService
     {
         return input.Contains("my name is", StringComparison.OrdinalIgnoreCase)
             || input.Contains("i am called", StringComparison.OrdinalIgnoreCase)
-            || input.Contains("i'm called", StringComparison.OrdinalIgnoreCase);
+            || input.Contains("i'm called", StringComparison.OrdinalIgnoreCase)
+            || input.StartsWith("call me ", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractName(string input)
@@ -196,6 +273,12 @@ public class ChatbotResponseService
             return input[(input.IndexOf(marker, StringComparison.OrdinalIgnoreCase) + marker.Length)..].Trim();
         }
 
+        marker = "call me";
+        if (input.StartsWith(marker, StringComparison.OrdinalIgnoreCase))
+        {
+            return input[(input.IndexOf(marker, StringComparison.OrdinalIgnoreCase) + marker.Length)..].Trim();
+        }
+
         return string.Empty;
     }
 
@@ -204,20 +287,13 @@ public class ChatbotResponseService
         return input.Contains("interested in", StringComparison.OrdinalIgnoreCase)
             || input.Contains("i like", StringComparison.OrdinalIgnoreCase)
             || input.Contains("favourite topic", StringComparison.OrdinalIgnoreCase)
-            || input.Contains("favorite topic", StringComparison.OrdinalIgnoreCase);
+            || input.Contains("favorite topic", StringComparison.OrdinalIgnoreCase)
+            || input.Contains("i care about", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractTopic(string input)
     {
-        foreach (var keyword in new[] { "password", "scam", "privacy", "phishing", "malware", "safety" })
-        {
-            if (input.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-            {
-                return keyword;
-            }
-        }
-
-        return string.Empty;
+        return FindTopic(input) ?? string.Empty;
     }
 
     private static string DetectSentiment(string input)

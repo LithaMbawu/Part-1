@@ -51,6 +51,47 @@ public class ChatbotResponseServiceTests
         Assert.Contains("keep talking about phishing", response);
     }
 
+    [Theory]
+    [InlineData("How can I protect my passphrases?", "password")]
+    [InlineData("What is ransomware?", "malware")]
+    [InlineData("Should I turn on 2FA?", "multi-factor authentication")]
+    [InlineData("Tell me about social engineering", "social engineering")]
+    [InlineData("How do backups help?", "backup")]
+    [InlineData("Is public Wi-Fi safe?", "wifi")]
+    public void GetResponse_RecognizesTopicAliases(string input, string expectedTopic)
+    {
+        var service = new ChatbotResponseService();
+        using var fixture = new TemporaryMemory();
+
+        var response = service.GetResponse(input, fixture.Memory);
+
+        Assert.False(string.IsNullOrWhiteSpace(response));
+        Assert.Equal(expectedTopic, fixture.Memory.LastTopic);
+    }
+
+    [Fact]
+    public void GetResponse_OffersContextualClarificationForAmbiguousPhrase()
+    {
+        var service = new ChatbotResponseService();
+        using var fixture = new TemporaryMemory();
+
+        var response = service.GetResponse("I got a strange link", fixture.Memory);
+
+        Assert.Contains("suspicious messages and phishing", response);
+    }
+
+    [Fact]
+    public void GetResponse_UsesSavedNameInGreeting()
+    {
+        var service = new ChatbotResponseService();
+        using var fixture = new TemporaryMemory();
+        fixture.Memory.SaveUserName("Ada");
+
+        var response = service.GetResponse("hello", fixture.Memory);
+
+        Assert.Contains("Hello, Ada", response);
+    }
+
     [Fact]
     public void ChatbotMemory_RestoresPersonalDetailsFromDisk()
     {
