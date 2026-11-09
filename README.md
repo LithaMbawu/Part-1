@@ -72,22 +72,22 @@ ORDER BY t.name;
 
 ## Cybersecurity chatbot
 
-The Cybersecurity Awareness Chatbot provides desktop applications for cybersecurity awareness: a Windows WPF client and a cross-platform Avalonia client for macOS, Windows, and Linux. Both share the C# core for keyword-based guidance, follow-up responses, simple sentiment-aware phrasing, randomized tips, and persistent personalization. The original WPF GUI has an optional bundled voice greeting; the ASCII artwork is included as a project asset, but is not currently rendered in the chat window.
+The Cybersecurity Awareness Chatbot provides desktop applications for cybersecurity awareness: a Windows WPF client and a cross-platform Avalonia client for macOS, Windows, and Linux. Both share the C# core for topic-alias recognition, context-aware follow-ups, phrase-based sentiment wording, randomized tips, local personalization, flexible task/reminder parsing, a 12-question quiz, and paged activity history. The original WPF GUI has an optional bundled voice greeting; the ASCII artwork is included as a project asset, but is not currently rendered in the chat window.
 
 ### Features
 
-- Guidance for password safety, scams, privacy, phishing, malware, and general online safety.
+- Guidance for passwords, passphrases, scams/fraud, privacy, phishing/smishing, malware/viruses, multi-factor authentication, social engineering, identity protection, backups, Wi-Fi, and general online safety.
 - Multiple responses and randomized tips to make repeated interactions less repetitive.
 - Follow-ups such as “tell me more” and “another tip” that continue the latest supported topic.
 - Simple phrase-based sentiment detection for worried, frustrated, and curious messages.
 - Local conversation memory for a name, favorite topic, most recent topic, and sentiment. Memory is saved under the current user's local application data directory and reused on the next launch. It is stored locally; remove the `CybersecurityChatbot/memory.json` file from that directory to clear it.
 - Desktop interfaces with aligned chat bubbles. The Windows WPF interface also has optional playback of the supplied `docs/greeting.wav` welcome intro. The intro plays at launch and when enabled; it does not repeat after every chat message.
-- A task assistant that stores task titles, descriptions, completion state, and optional reminder dates in MySQL. Tasks can be added, completed/reopened, and deleted from the GUI.
+- A task assistant that stores task titles, descriptions, completion state, and optional reminder dates in MySQL. Add, list/read, complete/reopen, delete, update reminders, and clear reminders from the task UI. Changes reload from the database so the list reflects persisted state.
 - A 12-question cybersecurity quiz with multiple-choice and true/false questions, immediate explanations, scoring, and a final result.
-- Rule-based NLP command detection in chat for task/reminder creation, quiz launch, and activity-log requests. Natural task phrases such as “Remind me to update my password tomorrow” are supported.
-- A recent activity log that records the latest 10 task, reminder, quiz, and recognized-command actions; ask “show activity log” or “what have you done for me?” in chat.
+- Rule-based NLP command detection supports varied task/reminder phrasings and relative dates such as “tomorrow”, “in three days”, “next week”, and “in two months”; quiz and activity commands are also recognized.
+- A categorized, timestamped activity log starts with the latest 10 entries, supports **Show 10 more**, and retains at most 200 actions per session. Ask “show activity log”, “show more activity”, or “show all activity” in chat.
 
-The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment detection is rule-based and may not recognize every way someone expresses a feeling.
+The chatbot uses deterministic phrase and topic-alias rules with a selection of response variations; it is not an open-ended AI assistant. Sentiment detection is rule-based and may not recognize every way someone expresses a feeling. Stored reminders are not operating-system notifications: the app does not run as a background reminder service.
 
 ### Requirements
 
@@ -103,7 +103,7 @@ The chatbot is keyword/phrase-driven, not an open-ended AI assistant. Sentiment 
 3. Keep credentials out of source control. Set the variable in the environment used to launch Visual Studio/the application, then restart the application so it can read the updated value.
 4. On launch, the application creates the `CybersecurityTasks` table if needed and loads saved tasks. If MySQL is not configured or available, chat, the quiz, and the in-memory activity log still work, while task storage is disabled.
 
-The reminder field stores a date/time in MySQL. The GUI date picker and natural-language date phrases currently set reminders to the start of the selected date. These are stored reminders; the app does not run as a background notification service.
+The reminder field stores a date/time in MySQL. The date picker and supported natural-language date phrases store reminders at the start of the selected date. These are stored reminders, not background notifications.
 
 ### Run the chatbot on macOS, Windows, or Linux
 
@@ -112,6 +112,8 @@ Run the cross-platform Avalonia desktop app from the repository root:
 ```sh
 dotnet run --project docs/CybersecurityChatbot.Desktop/CybersecurityChatbot.Desktop.csproj
 ```
+
+In VS Code, choose **Terminal → Run Task → Run Mac desktop app (Avalonia)**. The default **Build** task now builds the Mac-compatible project instead of the Windows WPF window.
 
 Chat, the quiz, and the activity log work without MySQL. Configure `CYBERSECURITY_CHATBOT_MYSQL` to enable saved tasks and reminders. See [the cross-platform app notes](docs/CybersecurityChatbot.Desktop/README.md).
 
@@ -127,7 +129,7 @@ The core and test projects target .NET 8; the WPF application targets .NET 10 fo
 
 ### Run the automated tests
 
-From the repository root, run `dotnet test docs/CybersecurityChatbot.slnx`. The core tests cover supported-topic recognition, follow-up context, sentiment phrasing, and restoring memory in a new session.
+From the repository root, run `dotnet test docs/CybersecurityChatbot.slnx`. The core tests cover topic aliases, follow-up context, sentiment phrasing, memory restoration, flexible task/reminder parsing, activity paging/retention, and quiz behavior. Tests do not require a live MySQL server; verify database integration separately against the configured database.
 
 ### Example conversation
 
@@ -155,13 +157,14 @@ Exact wording and advice can vary because responses are selected from multiple o
 ├── .github/workflows/                 # Repository documentation validation
 └── docs/
     ├── CybersecurityChatbot.slnx
-    ├── CybersecurityChatbot.Core/     # Response logic and persistent memory
+    ├── CybersecurityChatbot.Core/     # Response, memory, NLP parsing, quiz, and activity logic
     ├── CybersecurityChatbot.Core.Tests/ # Core behavior and memory tests
     ├── CybersecurityChatbot.Gui/      # Windows WPF interface
     ├── CybersecurityChatbot.Desktop/  # Cross-platform Avalonia interface
     ├── cybersecurity-chatbot-mysql.sql # MySQL database setup
     ├── assets/                        # Voice and ASCII assets
     ├── api-endpoint-plan.md
+    ├── cybersecurity-chatbot-presentation-guide.md # Demo script and code walkthrough
     ├── raceday-erd.mmd
     ├── raceday-erd.png
     └── raceday-schema.sql
@@ -173,6 +176,7 @@ Exact wording and advice can vary because responses are selected from multiple o
 
 - Submit the repository link through ARC: [LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1).
 - Submit the presentation link through ARC or use the YouTube link above. The video is listed as unlisted; confirm the assessor can access it.
+- Use the [presentation guide](docs/cybersecurity-chatbot-presentation-guide.md) to record a clear feature and code walkthrough. Update the YouTube URL only after uploading the final video.
 - Attach the available evidence: [CI workflow screenshot](docs/ci-workflow-screenshot.png) and [SSMS execution screenshot](docs/ssms-execution-screenshot.png). Confirm each image clearly shows the relevant successful run before submission.
 - Keep commits descriptive and tied to real project changes; do not manufacture commits to meet a count.
 - Three GitHub Releases with annotated version notes are published below. Keep release notes accurate if these milestones change; a tag alone is not a GitHub Release.
