@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Mac desktop app (Avalonia)",
+      "type": "process",
+      "command": "/usr/local/share/dotnet/dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/docs/CybersecurityChatbot.Desktop/CybersecurityChatbot.Desktop.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Run Mac desktop app (Avalonia)",
+      "type": "process",
+      "command": "/usr/local/share/dotnet/dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/docs/CybersecurityChatbot.Desktop/CybersecurityChatbot.Desktop.csproj"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
