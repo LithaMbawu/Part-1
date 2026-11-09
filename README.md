@@ -8,7 +8,7 @@
 This repository contains two related coursework deliverables: the **RaceDay Part 1 planning and database design** and the **Cybersecurity Awareness Chatbot desktop application**. This root README is the single project guide for both; the design artifacts and application source remain organized under `docs/`.
 
 - **GitHub repository:** [LithaMbawu/Part-1](https://github.com/LithaMbawu/Part-1)
-- **Project presentation:** [Watch the latest presentation on YouTube](https://youtu.be/BuCVB9RGW9o)
+- **Project presentation:** [Watch the latest presentation on YouTube] https://youtu.be/UfLJWUsmxV0?si=ZZnDgD2nQ4lxipJZ
 
 ## Contents
 
@@ -68,6 +68,10 @@ ORDER BY t.name;
 - **Part 2:** implement the REST API against the approved schema and endpoint plan, including authentication, role-based authorization, and tests.
 - **Part 3:** build the MVC application that consumes the API, then add the planned Azure Blob Storage and Docker components.
 
+### Assessment feedback for Part 2
+
+> You have produced a very good submission that demonstrates a solid understanding of ASP.NET Core Web API development. Your project includes most of the required functionality, and your code is generally well organised. Your authentication, database integration and API endpoints show good progress. There are a few areas that could be improved, particularly in strengthening your unit tests and ensuring that all endpoints are properly documented and tested. Overall, this is a strong submission. Well done.
+
 ---
 
 ## Cybersecurity chatbot
@@ -93,17 +97,17 @@ The chatbot uses deterministic phrase and topic-alias rules with a selection of 
 
 - .NET 10 SDK. The Avalonia desktop app runs on macOS, Windows, and Linux; the WPF app requires Windows 10 or later.
 - A compatible Visual Studio version is needed only to build/run the Windows WPF GUI.
-- MySQL Server 8.0 or compatible, plus a database/schema created for this application. The GUI creates its task table on first successful connection.
+- The cross-platform desktop app stores tasks locally in SQLite by default. MySQL Server 8.0 or compatible is optional there; the Windows WPF client uses MySQL for task storage.
 - SQL Server Management Studio and access to SQL Server only if running the RaceDay database script above.
 
-### Configure the task database
+### Configure MySQL (optional for the cross-platform app)
 
 1. Start MySQL and create the application database by running `docs/cybersecurity-chatbot-mysql.sql` in a MySQL client.
 2. Set the `CYBERSECURITY_CHATBOT_MYSQL` environment variable to a MySQL connection string for that database. Example format: `Server=localhost;Port=3306;Database=cybersecurity_chatbot;User ID=YOUR_USER;Password=YOUR_PASSWORD;`.
 3. Keep credentials out of source control. Set the variable in the environment used to launch Visual Studio/the application, then restart the application so it can read the updated value.
-4. On launch, the application creates the `CybersecurityTasks` table if needed and loads saved tasks. If MySQL is not configured or available, chat, the quiz, and the in-memory activity log still work, while task storage is disabled.
+4. On a successful MySQL connection, the application creates the `CybersecurityTasks` table if needed and loads saved tasks. The cross-platform app continues to support tasks using local SQLite if MySQL is not configured or the login fails. The Windows WPF client requires MySQL for task storage.
 
-The reminder field stores a date/time in MySQL. The date picker and supported natural-language date phrases store reminders at the start of the selected date. These are stored reminders, not background notifications.
+The selected task store keeps reminder dates at the start of the selected date. These are stored reminders, not background notifications.
 
 ### Run the chatbot on macOS, Windows, or Linux
 
@@ -115,7 +119,7 @@ dotnet run --project docs/CybersecurityChatbot.Desktop/CybersecurityChatbot.Desk
 
 In VS Code, choose **Terminal → Run Task → Run Mac desktop app (Avalonia)**. The default **Build** task now builds the Mac-compatible project instead of the Windows WPF window.
 
-Chat, the quiz, and the activity log work without MySQL. Configure `CYBERSECURITY_CHATBOT_MYSQL` to enable saved tasks and reminders. See [the cross-platform app notes](docs/CybersecurityChatbot.Desktop/README.md).
+Task CRUD works without MySQL: the Mac/cross-platform app uses a local SQLite database at `~/Library/Application Support/CybersecurityChatbot/tasks.db` on macOS, with no account or password required. MySQL remains optional: enter its host, port, database, username, and password in the Tasks tab and select **Connect** to switch storage. The password is masked and not saved. See [the cross-platform app notes](docs/CybersecurityChatbot.Desktop/README.md).
 
 ### Run the Windows WPF chatbot
 
