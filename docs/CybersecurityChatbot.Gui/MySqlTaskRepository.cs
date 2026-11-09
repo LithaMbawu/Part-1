@@ -3,13 +3,32 @@ using MySqlConnector;
 
 namespace CybersecurityChatbot.Gui;
 
-public sealed class MySqlTaskRepository(string connectionString)
+public sealed class MySqlTaskRepository(string connectionString) : ITaskRepository
 {
     private readonly string _connectionString = connectionString;
 
     public async Task InitializeAsync()
     {
-        await using var connection = new MySqlConnection(_connectionString);
+        var connectionString = new MySqlConnectionStringBuilder(_connectionString);
+        if (string.IsNullOrWhiteSpace(connectionString.Database))
+        {
+            throw new InvalidOperationException("The MySQL connection string must include a database name.");
+        }
+
+        try
+        {
+            await CreateTaskTableAsync(_connectionString);
+        }
+        catch (MySqlException exception) when (exception.Number == 1049)
+        {
+            await CreateDatabaseAsync(connectionString);
+            await CreateTaskTableAsync(_connectionString);
+        }
+    }
+
+    private static async Task CreateTaskTableAsync(string connectionString)
+    {
+        await using var connection = new MySqlConnection(connectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText = """
@@ -24,6 +43,17 @@ public sealed class MySqlTaskRepository(string connectionString)
                 INDEX IX_CybersecurityTasks_ReminderAt (ReminderAt)
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
             """;
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task CreateDatabaseAsync(MySqlConnectionStringBuilder connectionString)
+    {
+        var databaseName = connectionString.Database.Replace("`", "``", StringComparison.Ordinal);
+        connectionString.Database = string.Empty;
+        await using var connection = new MySqlConnection(connectionString.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
         await command.ExecuteNonQueryAsync();
     }
 
