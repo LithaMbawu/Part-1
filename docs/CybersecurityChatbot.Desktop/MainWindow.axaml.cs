@@ -7,6 +7,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using CybersecurityChatbot.Core;
 using CybersecurityChatbot.Gui;
+using Microsoft.Data.Sqlite;
+using MySqlConnector;
 
 namespace CybersecurityChatbot.Desktop;
 
@@ -19,7 +21,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ChatMessage> _messages = new();
     private readonly ObservableCollection<TaskViewModel> _tasks = new();
     private readonly ObservableCollection<string> _activity = new();
-    private MySqlTaskRepository? _taskRepository;
+    private ITaskRepository? _taskRepository;
     private long? _pendingReminderTaskId;
     private bool _quizAnswered;
 
@@ -38,25 +40,77 @@ public partial class MainWindow : Window
         var connectionString = Environment.GetEnvironmentVariable("CYBERSECURITY_CHATBOT_MYSQL");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            DatabaseStatus.Text = "MySQL is not configured. Set CYBERSECURITY_CHATBOT_MYSQL to a connection string; task storage is unavailable until configured.";
-            AddTaskButton.IsEnabled = false;
+            await UseLocalTaskStorageAsync();
             return;
         }
 
+        await ConnectTaskStorageAsync(connectionString);
+    }
+
+    private async void ConnectDatabase_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (!uint.TryParse(DatabasePort.Text, out var port) || port is 0 or > 65535)
+        {
+            DatabaseStatus.Text = "Enter a valid MySQL port number (1–65535).";
+            return;
+        }
+
+        var builder = new MySqlConnectionStringBuilder
+        {
+            Server = string.IsNullOrWhiteSpace(DatabaseHost.Text) ? "127.0.0.1" : DatabaseHost.Text.Trim(),
+            Port = port,
+            Database = string.IsNullOrWhiteSpace(DatabaseName.Text) ? "cybersecurity_chatbot" : DatabaseName.Text.Trim(),
+            UserID = DatabaseUser.Text?.Trim() ?? string.Empty,
+            Password = DatabasePassword.Text ?? string.Empty,
+            ConnectionTimeout = 5
+        };
+
+        await ConnectTaskStorageAsync(builder.ConnectionString);
+    }
+
+    private async Task ConnectTaskStorageAsync(string connectionString)
+    {
+        ConnectDatabaseButton.IsEnabled = false;
+        AddTaskButton.IsEnabled = false;
+        DatabaseStatus.Text = "Connecting to MySQL…";
         try
         {
-            _taskRepository = new MySqlTaskRepository(connectionString);
-            await _taskRepository.InitializeAsync();
+            var repository = new MySqlTaskRepository(connectionString);
+            await repository.InitializeAsync();
+            _taskRepository = repository;
             await ReloadTasksAsync();
-            DatabaseStatus.Text = "Connected to MySQL. Tasks and reminders are saved in the database.";
+            DatabasePassword.Clear();
+            DatabaseStatus.Text = $"Connected to MySQL database '{DatabaseName.Text?.Trim()}'. Tasks and reminders are saved.";
             AddTaskButton.IsEnabled = true;
         }
-        catch (Exception exception) when (exception is MySqlConnector.MySqlException or IOException or InvalidOperationException)
+        catch (MySqlException exception)
         {
-            _taskRepository = null;
-            DatabaseStatus.Text = "Could not connect to MySQL. Check that the server/database exists and the connection string is valid.";
-            AddTaskButton.IsEnabled = false;
+            DatabaseStatus.Text = $"MySQL connection failed: {exception.Message} Local SQLite task storage remains active.";
+            if (_taskRepository is null)
+            {
+                await UseLocalTaskStorageAsync(DatabaseStatus.Text);
+            }
+            else
+            {
+                AddTaskButton.IsEnabled = true;
+            }
         }
+        finally
+        {
+            ConnectDatabaseButton.IsEnabled = true;
+        }
+    }
+
+    private async Task UseLocalTaskStorageAsync(string? statusMessage = null)
+    {
+        var repository = new SqliteTaskRepository();
+        await repository.InitializeAsync();
+        _taskRepository = repository;
+        await ReloadTasksAsync();
+        DatabaseStatus.Text = statusMessage is null
+            ? $"Using local SQLite storage. Tasks are saved on this Mac at {repository.DatabasePath}. You can connect MySQL above instead."
+            : $"{statusMessage} Using local SQLite storage at {repository.DatabasePath}.";
+        AddTaskButton.IsEnabled = true;
     }
 
     private async void Send_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => await HandleUserInputAsync();
@@ -140,7 +194,7 @@ public partial class MainWindow : Window
     {
         if (_taskRepository is null)
         {
-            AddBotMessage("I understood that as a task request, but task storage is unavailable until MySQL is configured.");
+            AddBotMessage("Task storage is unavailable right now. Restart the app to initialize local storage, or connect MySQL in the Tasks tab.");
             return;
         }
 
@@ -165,9 +219,9 @@ public partial class MainWindow : Window
                 AddBotMessage($"Task added: '{title}'. Would you like a reminder? You can say ‘yes, remind me in 3 days’.");
             }
         }
-        catch (MySqlConnector.MySqlException)
+        catch (Exception exception) when (IsTaskStorageException(exception))
         {
-            AddBotMessage("I couldn't save that task to MySQL. Check your database connection and try again.");
+            AddBotMessage("I couldn't save that task to storage. Please check the Tasks tab status and try again.");
         }
     }
 
@@ -184,9 +238,9 @@ public partial class MainWindow : Window
             LogAction($"Reminder set for '{title}' on {reminderAt:g}.");
             AddBotMessage($"Got it! I'll remind you about '{title}' on {reminderAt:g}.");
         }
-        catch (MySqlConnector.MySqlException)
+        catch (Exception exception) when (IsTaskStorageException(exception))
         {
-            AddBotMessage("I couldn't save that reminder. Please check the MySQL connection and try again.");
+            AddBotMessage("I couldn't save that reminder. Please check task storage and try again.");
         }
     }
 
@@ -201,7 +255,7 @@ public partial class MainWindow : Window
         }
         if (_taskRepository is null)
         {
-            await ShowMessageAsync("MySQL is not connected. Configure the database before saving tasks.");
+            await ShowMessageAsync("Task storage is unavailable. Restart the app to initialize local storage, or connect MySQL in the Tasks tab.");
             return;
         }
         try
@@ -220,9 +274,9 @@ public partial class MainWindow : Window
             TaskDescription.Clear();
             ReminderDatePicker.SelectedDate = null;
         }
-        catch (MySqlConnector.MySqlException)
+        catch (Exception exception) when (IsTaskStorageException(exception))
         {
-            await ShowMessageAsync("The task could not be saved. Check the MySQL connection.");
+            await ShowMessageAsync("The task could not be saved to storage. Check the Tasks tab status.");
         }
     }
 
@@ -237,7 +291,7 @@ public partial class MainWindow : Window
             LogAction($"Task '{task.Title}' {action}.");
             AddBotMessage($"Task '{task.Title}' {action}.");
         }
-        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The task could not be updated in MySQL."); }
+        catch (Exception exception) when (IsTaskStorageException(exception)) { await ShowMessageAsync("The task could not be updated in storage."); }
     }
 
     private async void DeleteTask_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -251,7 +305,7 @@ public partial class MainWindow : Window
             LogAction($"Task deleted: '{task.Title}'.");
             AddBotMessage($"Task '{task.Title}' was deleted.");
         }
-        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The task could not be deleted from MySQL."); }
+        catch (Exception exception) when (IsTaskStorageException(exception)) { await ShowMessageAsync("The task could not be deleted from storage."); }
     }
 
     private async void UpdateReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -281,7 +335,7 @@ public partial class MainWindow : Window
             await ReloadTasksAsync();
             LogAction($"Reminder updated for '{task.Title}' to {reminderAt:yyyy-MM-dd}.");
         }
-        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The reminder could not be updated in MySQL."); }
+        catch (Exception exception) when (IsTaskStorageException(exception)) { await ShowMessageAsync("The reminder could not be updated in storage."); }
     }
 
     private async void ClearReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -298,7 +352,7 @@ public partial class MainWindow : Window
             await ReloadTasksAsync();
             LogAction($"Reminder cleared for '{task.Title}'.");
         }
-        catch (MySqlConnector.MySqlException) { await ShowMessageAsync("The reminder could not be cleared in MySQL."); }
+        catch (Exception exception) when (IsTaskStorageException(exception)) { await ShowMessageAsync("The reminder could not be cleared from storage."); }
     }
 
     private async Task ReloadTasksAsync()
@@ -308,6 +362,9 @@ public partial class MainWindow : Window
         _tasks.Clear();
         foreach (var task in loadedTasks) _tasks.Add(new TaskViewModel(task));
     }
+
+    private static bool IsTaskStorageException(Exception exception) =>
+        exception is MySqlException or SqliteException or IOException or InvalidOperationException;
 
     private void StartQuiz()
     {
