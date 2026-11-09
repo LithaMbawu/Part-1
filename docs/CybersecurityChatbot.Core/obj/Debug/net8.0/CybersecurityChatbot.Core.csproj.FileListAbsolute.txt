@@ -10,3 +10,4 @@
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/refint/CybersecurityChatbot.Core.dll
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.pdb
 /Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/ref/CybersecurityChatbot.Core.dll
+/Users/lithambawu/Downloads/Part 1/docs/CybersecurityChatbot.Core/obj/Debug/net8.0/CybersecurityChatbot.Core.csproj.AssemblyReference.cache
